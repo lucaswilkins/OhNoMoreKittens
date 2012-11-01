@@ -15,6 +15,7 @@ img {
 
 </style>
 
+<script type="text/javascript" charset="utf-8" src="phonegap.js"></script>  
 <script type="text/javascript" src="settings.js"></script>
 <script type="text/javascript" src="navigate.js"></script>
 
@@ -44,6 +45,7 @@ function windowsize(){
 }
 
 window.onload = function() {
+  navigator.screenOrientation.set('portrait');
 
   var winsz = windowsize();
   mainimage.width = winsz.width;
