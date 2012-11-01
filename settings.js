@@ -1,4 +1,4 @@
-var BROWSER_TEST = false;
+var BROWSER_TEST = true;
 
 var N_IMAGES = 10;
 var IMG_PREFIX = "kittens";

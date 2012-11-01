@@ -23,6 +23,7 @@ div {
 img {
   height: auto;
   vertical-align: middle;
+  position: relative;
 }
 
 a:link {
@@ -167,10 +168,13 @@ function fill_div(img,div){
 
   //log(img_ar);
 
-  // if image is wider than div, set image with to div width
+  // if image is wider than div, set image width to div width
   if(img_ar > div_ar){
     img.width = strippx(div.style.width);
+    //log("Setting top value to: " +(strippx(div.style.height) - (img.width/img_ar))/2 + 'px');
+    img.style.top = (strippx(div.style.height) - (img.width/img_ar))/2 + 'px';
   } else { // otherwise, set by height
+    img.style.top = '0px';
     img.width = img_ar*strippx(div.style.height);
   }
 }
