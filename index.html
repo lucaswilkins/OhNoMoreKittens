@@ -1,268 +1,27 @@
-<!DOCTYPE HTML>
-
 <html>
 <head>
 
-<style type="text/css">
+<style>
+
 * {
   border: 0;
   padding: 0;
   margin: 0;
 }
 
-body {
-  overflow: hidden;
-}
-
-div {
-  text-align: center;
-  vertical-align: middle;
-}
-
 img {
-  height: auto;
-  vertical-align: middle;
+  position: absolute;
 }
 
 </style>
 
+<script type="text/javascript" src="settings.js"></script>
+<script type="text/javascript" src="navigate.js"></script>
+
 <script type="text/javascript">
 
-var N_IMAGES = 10;
-var IMG_PREFIX = "kittens";
-var IMG_SUFFIX = ".jpg";
-
-/* Simulate touch events */
-
-
-touchstart = function(event){
-  stop_anim();
-}
-
-
-var momentum = 0;
-touchmove = function(event){
-  //log(event);
-  movewindowlist(event);
-
-  if(event.dx != 0)
-  momentum = event.dx / event.dt;
-}
-
-touchend = function(event){
-  //log("momentum: "+momentum);
-  settle_windows();
-}
-
-touchcancel = function(){
-  
-}
-
-
-
-function log(msg){
-  console.log(msg);
-}
-
-// Create divlist
-
-function random_color() {
-    var letters = '0123456789ABCDEF'.split('');
-    var color = '#';
-    for (var i = 0; i < 6; i++ ) {
-        color += letters[Math.round(Math.random() * 15)];
-    }
-    return color;
-}
-
- 
-function disableDraggingFor(element) {
-  // this works for FireFox and WebKit in future according to http://help.dottoro.com/lhqsqbtn.php
-  element.draggable = false;
-  // this works for older web layout engines
-  element.onmousedown = function(event) {
-                event.preventDefault();
-                return false;
-              };
-}
-
-function create_window(position){
-  var new_div = document.createElement("div");
-  var winsz = windowsize();
-  var image_id = correct_image_number(im_number+position)+1;
-  new_div.style.position = "absolute";
-  document.body.appendChild(new_div);
-  new_div.style.width = winsz.width + 'px';
-  new_div.style.height = winsz.height + 'px';
-  new_div.style.left = position*winsz.width + 'px';
-  new_div.style.background = random_color();
-  //new_div.innerHTML = '<p align="center">Image number '+image_id+'</p>';
-  
-  
-  var new_img = new Image();
-  new_img.onload = function(){ fill_div(new_img, new_div); };
-  new_img.src = IMG_PREFIX + image_id + IMG_SUFFIX;
-    
-
-  disableDraggingFor(new_div);  
-  disableDraggingFor(new_img);
-  applymouse(new_div);
-  applymouse(new_img);
-
-  new_div.appendChild(new_img);
-
-  return new_div;
-}
-
-function resize_window(win, pos, sz){
-  win.style.left = (pos * sz.width) + 'px';
-  win.style.width = sz.width + 'px';
-  win.style.height = sz.height + 'px';
-  fill_div(win.getElementsByTagName("img")[0], win); // HACK but, Always will be zero
-}
-
-function resize_everything(){
-  windowsize_call();
-  winsz = windowsize();
-  //log(winsz);
-  resize_window(windowlist.leftpreload, -2, winsz);
-  resize_window(windowlist.left, -1, winsz);
-  resize_window(windowlist.middle, 0, winsz);
-  resize_window(windowlist.right, 1, winsz);
-  resize_window(windowlist.rightpreload, 2, winsz);
-}
-
-function fill_div(img,div){
-  // find aspect ratio of image and div
-  var img_ar = img.width / img.height;
-  var div_ar = strippx(div.style.width) / strippx(div.style.height);
-
-  //log(img_ar);
-
-  // if image is wider than div, set image with to div width
-  if(img_ar > div_ar){
-    img.width = strippx(div.style.width);
-  } else { // otherwise, set by height
-    img.width = img_ar*strippx(div.style.height);
-  }
-}
-
-
-function movewindowlist(details){
-  for(var window_id in windowlist){
-    var win = windowlist[window_id];
-    var target = (strippx(win.style.left) + details.dx)+'px';
-    //log(target);
-    win.style.left = target;
-  }
-}
-
-function strippx(val){
-  if(val == ""){
-    return 0;
-  }
-  if(val.substring(-2) == "px"){
-    return parseInt(val.substring(0,val.length-2));
-  } else {
-    return parseInt(val);
-  }
-}
-
-var windowlist = {};
-
-im_number = 0;
-
-function correct_image_number(val){
-  out = val;
-  while (out < 0){
-     out += N_IMAGES;
-  }
-  while (out >= N_IMAGES){
-     out -= N_IMAGES;
-  }
-  return out;
-}
-
-function removeChilds(tag){
-  while(tag.childNodes.length > 0){
-    tag.removeChild(tag.childNodes[0]);
-  }
-}
-
-function dec_window(){
-    im_number -= 1;
-    im_number = correct_image_number(im_number);
-    
-    removeChilds(windowlist.rightpreload);
-    document.body.removeChild(windowlist.rightpreload);
-
-    windowlist.rightpreload = windowlist.right;
-    windowlist.right = windowlist.middle;
-    windowlist.middle = windowlist.left;
-    windowlist.left = windowlist.leftpreload;
-    windowlist.leftpreload = create_window(-2);
-}
-
-function inc_window(){
-    im_number += 1;
-    im_number = correct_image_number(im_number);
-
-    removeChilds(windowlist.leftpreload);
-    document.body.removeChild(windowlist.leftpreload);
-
-    windowlist.leftpreload = windowlist.left
-    windowlist.left = windowlist.middle;
-    windowlist.middle = windowlist.right;
-    windowlist.right = windowlist.rightpreload;
-    windowlist.rightpreload = create_window(2);
-    return;
-}
-
-function initialise(){
-  windowlist.leftpreload = create_window(-2);
-  windowlist.left = create_window(-1);
-  windowlist.middle = create_window(0);
-  windowlist.right = create_window(1);
-  windowlist.rightpreload = create_window(2);
-}
-
-function rebuild_windows(){
-  if(strippx(windowlist.left.style.left) > -5){ // HACK should be zero, but lets allow for errors
-    // remove right, add left
-    dec_window();
-  }
-
-  if(strippx(windowlist.right.style.left) < 5){ // HACK should be zero, but lets allow for errors
-    // remove left, add right
-    inc_window();
-  }
-}
-
-var momdist = 10;
-// General idea is to ask will the stroke carry it past a threshold
-function find_window(){
-  var winsz = windowsize();
-  var factor = strippx(windowlist.middle.style.left)/winsz.width;
-
-  var expected_distance = factor + momdist*momentum/winsz.width;
-
-  //log("Expected distance: "+expected_distance);
-
-  if(expected_distance > 0.5){
-    return winsz.width;
-  }
-  if(expected_distance < -0.5){
-    return -winsz.width;
-  }
-  return 0;
-}
 
 function windowsize(){
-  return window_size;
-}
-
-window_size = 0;
-function windowsize_call(){
  var out = {};
  out.width = 630;
  out.height = 460;
@@ -281,156 +40,34 @@ function windowsize_call(){
     out.height = window.innerHeight;
   }
   
-  window_size = out;
+  return out;
 }
 
-var animation = false;
-var refresh_rate = 10;
+window.onload = function() {
 
-function stop_anim(){
-  animation && clearInterval(animation);
-  animation = false;
-}
-
-function lock_windows(){
   var winsz = windowsize();
-  for(var win_id in windowlist){
-    var pos = winsz.width*(Math.round(strippx(windowlist[win_id].style.left)/winsz.width)) + 'px';
-    windowlist[win_id].style.left = pos;
-    //log("Locked to: " + pos);
-  }
+  mainimage.width = winsz.width;
+  mainimage.height = winsz.height;
 
+  // Spread remaining space
+
+  var wspace = (winsz.width - (browsebtn.width + randombtn.width))/3;
+
+  browsebtn.style.left = wspace + 'px';
+  randombtn.style.left = (2*wspace + browsebtn.width) + 'px';
+
+  // Move down 70%
+  browsebtn.style.top = winsz.height*0.7 + 'px';
+  randombtn.style.top = winsz.height*0.7 + 'px';
 }
-
-var baseline_momentum = 5;
-
-function settle_windows(){
-
-  // Stop animation
-  stop_anim();
-
-  // Find target position
-  var position = find_window(momentum);
-  
-
-  //log("Target position: "+position);
-
-  // if momentum is other way from direction we need to go, go back with fixed speed
-  if((position - strippx(windowlist.middle.style.left))*momentum < 0){
-    if(momentum != 0){
-      momentum *= -baseline_momentum/Math.abs(momentum);
-    }
-  }
-  
-
-  if(Math.abs(momentum) < baseline_momentum){
-    if(momentum != 0){
-      momentum *= baseline_momentum/Math.abs(momentum);
-    } else {
-      return;
-    }
-  }
-
-  function movement(){
-    var winsz = windowsize();
-    
-    
-
-    movewindowlist({dx: Math.ceil(momentum*refresh_rate)});
-    
-    //log(Math.abs(strippx(windowlist.middle.style.left) - position));
-    if((Math.abs(strippx(windowlist.middle.style.left) - position)) < Math.abs(1.5*momentum*refresh_rate)){
-      stop_anim();
-      lock_windows();
-      rebuild_windows();
-    }
-
-  }
-
-  animation = setInterval(movement, refresh_rate);
-}
-
-/*
- * onload
- */
-
-
-var isMouseDown = false;
-var mousestartx, mousestarty;
-var lastt;
-
-function applymouse(target){
-  //target.onmousemove = function(event){
-  target.ontouchmove = function(event){
-    if(isMouseDown){
-      var x = event.touches[0].pageX;
-      var y = event.touches[0].pageY;
-      var dt = event.timeStamp - lastt;
-      lastt = event.timeStamp;
-
-      var dx = x - mousestartx;
-      var dy = y - mousestarty;
-
-      mousestartx = x;
-      mousestarty = y;
-
-      touchmove({x: x, y: y, dx: dx, dy: dy, dt: dt});
-    }
-  }
-
-  //target.onmousedown = function(event){
-  target.ontouchstart = function(event){
-    //log(event);
-    mousestartx = event.touches[0].pageX;
-    mousestarty = event.touches[0].pageY;
-    lastt = event.timeStamp;
-    isMouseDown = true;
-
-    touchstart({x: mousestartx, y: mousestarty});
-  }
-
-  //target.onmouseup = function(event){
-  target.ontouchend = function(event){
-    isMouseDown = false;
-    
-    touchend();
-  }
-
-}
-
-window.onload = function(){
-
-  function preventBehavior(e) {
-      e.preventDefault(); 
-  };
-
-  document.addEventListener("touchmove", preventBehavior, false);
-
-
-  windowsize_call();
-
-  window.onresize = function(){
-      stop_anim();
-      lock_windows();
-      rebuild_windows();
-      windowsize_call();
-      resize_everything();
-  }
-  
-  initialise();
-
-
-
-}
-
 </script>
-
-</head>
-
 <body>
+
+<div><img src="kittens5.jpg" id="mainimage">
+<img src="butt1.png" id="browsebtn" onclick="goto_id();">
+<img src="butt2.png" id="randombtn" onclick="goto_rand();">
+</div>
 
 
 </body>
-
-
 </html>

@@ -17,6 +17,7 @@ body {
 div {
   text-align: center;
   vertical-align: middle;
+  position: absolute;
 }
 
 img {
@@ -24,18 +25,41 @@ img {
   vertical-align: middle;
 }
 
+a:link {
+  color: #cc3;
+  font-size: 30;
+  vertical-align: middle;
+  text-decoration: none;
+}
+
+
+a:visited {
+  color: #cc3;
+  font-size: 30;
+  vertical-align: middle;
+  text-decoration: none;
+}
+
+a:active {
+  color: #cc3;
+  font-size: 30;
+  vertical-align: middle;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #cc3;
+  font-size: 30;
+  vertical-align: middle;
+  text-decoration: none;
+}
+
 </style>
+<script type="text/javascript" charset="utf-8" src="phonegap.js"></script>  
+<script type="text/javascript" src="settings.js"></script>
+<script type="text/javascript" src="navigate.js"></script>
 
 <script type="text/javascript">
-
-var BROWSER_TEST = true;
-
-var N_IMAGES = 10;
-var IMG_PREFIX = "kittens";
-var IMG_SUFFIX = ".jpg";
-
-/* Simulate touch events */
-
 
 touchstart = function(event){
   stop_anim();
@@ -97,7 +121,7 @@ function create_window(position){
   new_div.style.width = winsz.width + 'px';
   new_div.style.height = winsz.height + 'px';
   new_div.style.left = position*winsz.width + 'px';
-  new_div.style.background = random_color();
+  new_div.style.background = "#000"; //random_color();
   //new_div.innerHTML = '<p align="center">Image number '+image_id+'</p>';
   
   
@@ -132,6 +156,8 @@ function resize_everything(){
   resize_window(windowlist.middle, 0, winsz);
   resize_window(windowlist.right, 1, winsz);
   resize_window(windowlist.rightpreload, 2, winsz);
+
+  move_buttons();
 }
 
 function fill_div(img,div){
@@ -203,6 +229,8 @@ function dec_window(){
     windowlist.middle = windowlist.left;
     windowlist.left = windowlist.leftpreload;
     windowlist.leftpreload = create_window(-2);
+
+    num_lab_link.innerText = ""+(im_number + 1);
 }
 
 function inc_window(){
@@ -217,7 +245,8 @@ function inc_window(){
     windowlist.middle = windowlist.right;
     windowlist.right = windowlist.rightpreload;
     windowlist.rightpreload = create_window(2);
-    return;
+
+    num_lab_link.innerText = ""+(im_number + 1);
 }
 
 function initialise(){
@@ -364,7 +393,7 @@ var lastt;
 var applymouse;
 
 if(BROWSER_TEST){
-applymouse = function(target){
+  applymouse = function(target){
     target.onmousemove = function(event){
     //target.ontouchmove = function(event){
       if(isMouseDown){
@@ -443,7 +472,57 @@ applymouse = function(target){
   }
 }
 
+/*
+ *   Create buttons 
+ */
+
+var num_lab
+var num_lab_link
+var random_lab
+
+function create_buttons(){
+
+  num_lab = document.createElement("div");
+  num_lab.innerHTML = "<a href=\"#\" onclick=\"goto_id()\">" +(im_number + 1) + '</a>';
+  num_lab_link = num_lab.children[0];
+  document.body.appendChild(num_lab);
+  num_lab.style.zIndex = 1000;
+
+
+  random_lab = document.createElement("div");
+  random_lab.innerHTML = "<a href=\"#\" onclick=\"goto_rand();\">random </a>";
+  document.body.appendChild(random_lab);
+  random_lab.style.zIndex = 1000;
+
+  move_buttons();
+
+}
+
+function move_buttons(){
+  var winsz = windowsize();
+  var btnsz = num_lab.getClientRects()[0];
+  
+  num_lab.style.top = (winsz.height - btnsz.height) + 'px';
+  num_lab.style.left = '5px';
+
+  var btnsz = random_lab.getClientRects()[0];
+  
+  random_lab.style.top = (winsz.height - btnsz.height) + 'px';
+  random_lab.style.left = (winsz.width - btnsz.width - 5) + 'px';
+
+}
+
 window.onload = function(){
+
+  var params = window.location.search.replace( "?", "" );
+  
+  // Bail if no parameters
+  if(params == ""){
+    im_number = 0;
+  } else {
+    im_number = parseInt(params)-1;
+  }
+
 
   function preventBehavior(e) {
       e.preventDefault(); 
@@ -454,6 +533,8 @@ window.onload = function(){
 
   windowsize_call();
 
+  create_buttons();
+
   window.onresize = function(){
       stop_anim();
       lock_windows();
@@ -463,9 +544,6 @@ window.onload = function(){
   }
   
   initialise();
-
-
-
 }
 
 </script>
